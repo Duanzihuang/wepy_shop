@@ -1,0 +1,16 @@
+<style lang="less">
+
+</style>
+<template>
+  <text>我的</text>
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  export default class Mine extends wepy.page {
+    config = {
+      navigationBarTitleText: '我的'
+    }
+  }
+</script>

@@ -1,0 +1,16 @@
+<style lang="less">
+
+</style>
+<template>
+  <text>购物车</text>
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  export default class Shopcart extends wepy.page {
+    config = {
+      navigationBarTitleText: '购物车'
+    }
+  }
+</script>

@@ -1,0 +1,39 @@
+<style lang="less">
+
+</style>
+<template>
+  <text>商品详情</text>
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  import https from '../utils/https'
+
+  export default class GoodsDetail extends wepy.page {
+    config = {
+      navigationBarTitleText: '商品详情'
+    }
+
+    data = {
+      goods_detail: null // 商品详情数据
+    }
+
+    onLoad(options) {
+      // 获取商品详情数据
+      this.getGoodsDetailData(options.goods_id)
+    }
+
+    // 获取商品详情数据
+    async getGoodsDetailData(goodsId) {
+      const result = await https({
+        url: 'goods/detail',
+        data: {
+          goods_id: goodsId
+        }
+      })
+
+      console.log(result)
+    }
+  }
+</script>
