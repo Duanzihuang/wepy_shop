@@ -307,7 +307,9 @@ import wepy from 'wepy'
 
 import https from '../utils/https'
 
-import WxParse from '../plugins/wxParse/wxParse.js'
+import WxParse from '../plugins/wxParse/wxParse'
+
+import {addLocalGoods} from '../utils/storageHelper'
 
 export default class GoodsDetail extends wepy.page {
   config = {
@@ -322,16 +324,19 @@ export default class GoodsDetail extends wepy.page {
       this.selectedTabIndex = e.currentTarget.dataset.tabIndex
     },
     wxParseImgLoad() {
-
     },
     wxParseImgTap() {
-
     },
     // 添加到购物车
-    addToShopCart(){
+    addToShopCart() {
       wepy.showToast({
-        title:'添加成功',
-        icon:'success'
+        title: '添加成功',
+        icon: 'success'
+      })
+
+      addLocalGoods({
+        goodsId: this.goods_detail.goods_id,
+        count: 1
       })
     }
   }

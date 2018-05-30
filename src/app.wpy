@@ -1,10 +1,10 @@
 <style lang="less">
-  @import "./statics/style/iconfont.wxss";
-  page {
-    background-color: #f4f4f4;
-    font-size: 24rpx;
-    color: #333;
-  }
+@import './statics/style/iconfont.wxss';
+page {
+  background-color: #f4f4f4;
+  font-size: 24rpx;
+  color: #333;
+}
 </style>
 
 <script>
@@ -13,7 +13,13 @@ import 'wepy-async-function'
 
 export default class extends wepy.app {
   config = {
-    pages: ['pages/home', 'pages/category', 'pages/shopcart', 'pages/mine','pages/goods_detail'],
+    pages: [
+      'pages/home',
+      'pages/category',
+      'pages/shopcart',
+      'pages/mine',
+      'pages/goods_detail'
+    ],
     window: {
       backgroundTextStyle: 'light',
       navigationBarBackgroundColor: '#ff2d4a',
@@ -60,8 +66,7 @@ export default class extends wepy.app {
     this.use('requestfix')
   }
 
-  onLaunch() {
-  }
+  onLaunch() {}
 
   getUserInfo(cb) {
     const that = this

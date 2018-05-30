@@ -1,0 +1,62 @@
+<style lang="less" scoped>
+.outer {
+  border: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  border-radius: 5rpx;
+  view {
+    height: 50rpx;
+    width: 50rpx;
+    line-height: 50rpx;
+    text-align: center;
+  }
+  .value {
+    width: 65rpx;
+    border-left: 1px solid #ddd;
+  }
+  .add {
+    border-left: 1px solid #ddd;
+  }
+}
+</style>
+
+
+<template>
+  <view class="outer">
+    <view @tap="substrict">-</view>
+    <view class="value"><input value="{{count}}" type="number" /></view>
+    <view @tap="add" class="add">+</view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+
+export default class InputNumber extends wepy.component {
+  props = {
+    goodsCount: {
+      type:String,
+      twoWay: true
+    }
+  };
+
+  data = {
+    count: 1
+  }
+
+  methods = {
+    substrict() {
+      if (this.count <= 1) return
+      this.count--
+    },
+    add() {
+      this.count++
+    }
+  }
+
+  onLoad () {
+    console.log(this)
+    // this.count = this.goodsCount
+  }
+}
+</script>

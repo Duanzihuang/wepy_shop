@@ -1,16 +1,193 @@
 <style lang="less">
+@PADDING-LEFT: 20rpx;
+.empty-car {
+  display: flex;
+  flex-direction: column;
+  height: 500rpx;
+  justify-content: center;
+  align-items: center;
+  image {
+    width: 125rpx;
+    height: 124rpx;
+  }
+  &-tips {
+    margin-top: 30rpx;
+    font-size: 28rpx;
+    color: #666;
+  }
+  .extra {
+    font-size: 24rpx;
+    color: #999;
+  }
+}
 
+.shop-head {
+  background-color: #fff;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 @PADDING-LEFT;
+  border-bottom: 1px solid #ddd;
+  &-info {
+    display: flex;
+    align-items: center;
+    .shop-name {
+      margin-left: 10rpx;
+    }
+  }
+}
+
+.goods-item {
+  height: 220rpx;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  padding-left: @PADDING-LEFT;
+  border-bottom: 1px solid #eee;
+  .pubIcon {
+    background: url(https://mcart.jiuxian.com/statics/images/cart/catIcon.png)
+      no-repeat 0 0;
+    background-size: 300rpx 300rpx;
+    width: 55rpx;
+    height: 55rpx;
+  }
+  .tureIcon {
+    background-position: 0 -225rpx;
+  }
+  .falseIcon {
+    background-position: -50rpx -225rpx;
+  }
+  &-pic {
+    width: 160rpx;
+    height: 160rpx;
+    margin-left: 10rpx;
+    border: 1px solid #ddd;
+    padding: 10rpx;
+    border-radius: 5rpx;
+    image {
+      width: 100%;
+      height: 100%;
+    }
+  }
+  &-info {
+    flex: 1;
+    height: 180rpx;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0rpx @PADDING-LEFT;
+    &-title {
+      color: #333;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+    &-price {
+      color: #ff2d4a;
+      font-size: 30rpx;
+    }
+    &-edit {
+      display: flex;
+      justify-content: space-between;
+    }
+  }
+}
 </style>
 <template>
-  <text>购物车</text>
+  <view>
+    <view wx:if="{{isEmpty}}" class="empty-car">
+      <image src="../images/kong.png" />
+      <text class="empty-car-tips">购物车还是空的</text>
+      <text class="empty-car-tips extra">快去逛逛吧~</text>
+    </view>
+    <view wx:else>
+      <view class="shop-head">
+        <view class="shop-head-info">
+          <view class="iconfont icon-shop flex-center icon-dianpu"></view>
+          <text class="shop-name">品优购生活馆</text>
+        </view>
+      </view>
+      <repeat for="{{goodsList}}" key="index" index="index" item="item">
+        <view class="goods-item">
+          <view class="pubIcon {{item.isSelected?'tureIcon':'falseIcon'}}">
+          </view>
+          <view class="goods-item-pic">
+            <image src="{{item.goods_small_logo}}" />
+          </view>
+          <view class="goods-item-info">
+            <text class="goods-item-info-title">{{item.goods_name}}</text>
+            <text class="goods-item-info-price">￥{{item.goods_price}}</text>
+            <view class="goods-item-info-edit">
+              <view>
+                <inputnumber />
+              </view>
+              <text>| 删除</text>
+            </view>
+          </view>
+        </view>
+      </repeat>
+    </view>
+  </view>
 </template>
 
 <script>
-  import wepy from 'wepy'
+import wepy from 'wepy'
 
-  export default class Shopcart extends wepy.page {
-    config = {
-      navigationBarTitleText: '购物车'
-    }
+import inputnumber from '../components/inputnumber'
+
+import { getLocalGoods } from '../utils/storageHelper'
+
+import https from '../utils/https'
+
+export default class Shopcart extends wepy.page {
+  config = {
+    navigationBarTitleText: '购物车'
   }
+
+  data = {
+    isEmpty: true,
+    goodsList: []
+  }
+
+  components = {
+    inputnumber: inputnumber
+  }
+
+  async getGoodsListData(localGoods, ids) {
+    const result = await https({
+      url: `goods/goodslist`,
+      data: {
+        goods_ids: ids
+      }
+    })
+
+    this.goodsList = result.data
+
+    this.goodsList.forEach(item => {
+      item.isSelected = true
+      item.goodsCount = localGoods[item.goods_id]+""
+    })
+
+    this.$apply()
+  }
+
+  onLoad(options) {
+    const localGoods = getLocalGoods()
+
+    const tempArray = []
+    for (const key in localGoods) {
+      tempArray.push(key)
+    }
+
+    if (tempArray.length === 0) {
+      return false
+    }
+
+    this.isEmpty = false
+
+    this.getGoodsListData(localGoods, tempArray.join(','))
+  }
+}
 </script>
