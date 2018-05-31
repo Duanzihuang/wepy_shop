@@ -18,7 +18,8 @@ export default class extends wepy.app {
       'pages/category',
       'pages/shopcart',
       'pages/mine',
-      'pages/goods_detail'
+      'pages/goods_detail',
+      'pages/order'
     ],
     window: {
       backgroundTextStyle: 'light',
@@ -64,6 +65,7 @@ export default class extends wepy.app {
   constructor() {
     super()
     this.use('requestfix')
+    //this.use('promisify')
   }
 
   onLaunch() {}

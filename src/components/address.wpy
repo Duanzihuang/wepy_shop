@@ -1,0 +1,54 @@
+<template>
+  <view @tap="chooseAddress">
+    <slot>收获地址管理</slot>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+
+export default class Address extends wepy.component {
+  props = {
+    userAddress: {
+      type: Object,
+      twoWay: true
+    }
+  }
+
+  computed = {
+    userAddress() {
+      if (this.userAddress) {
+        const userAddressMerge = `${this.userAddress.provinceName}${
+          this.userAddress.cityName
+        }${this.userAddress.countyName}${this.userAddress.detailInfo}`
+        this.userAddress.userAddressMerge = userAddressMerge
+        // 保存到本地
+        wepy.setStorageSync('userAddress', this.userAddress)
+
+        return this.userAddress
+      }
+    }
+  }
+
+  onLoad() {
+    this.userAddress = wepy.getStorageSync('userAddress')
+  }
+
+  methods = {
+    chooseAddress() {
+      wepy.chooseAddress().then(res => {
+        // console.log(res.userName)
+        // console.log(res.postalCode)
+        // console.log(res.provinceName)
+        // console.log(res.cityName)
+        // console.log(res.countyName)
+        // console.log(res.detailInfo)
+        // console.log(res.nationalCode)
+        // console.log(res.telNumber)
+        this.userAddress = res
+        this.$apply()
+      })
+    }
+  }
+}
+</script>

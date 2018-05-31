@@ -44,19 +44,6 @@
   align-items: center;
   padding-left: @PADDING-LEFT;
   border-bottom: 1px solid #eee;
-  .pubIcon {
-    background: url(https://mcart.jiuxian.com/statics/images/cart/catIcon.png)
-      no-repeat 0 0;
-    background-size: 300rpx 300rpx;
-    width: 55rpx;
-    height: 55rpx;
-  }
-  .tureIcon {
-    background-position: 0 -225rpx;
-  }
-  .falseIcon {
-    background-position: -50rpx -225rpx;
-  }
   &-pic {
     width: 160rpx;
     height: 160rpx;
@@ -91,7 +78,74 @@
     &-edit {
       display: flex;
       justify-content: space-between;
+      .outer {
+        border: 1px solid #ddd;
+        display: flex;
+        align-items: center;
+        border-radius: 5rpx;
+        view {
+          height: 50rpx;
+          width: 50rpx;
+          line-height: 50rpx;
+          text-align: center;
+        }
+        .value {
+          width: 65rpx;
+          border-left: 1px solid #ddd;
+        }
+        .add {
+          border-left: 1px solid #ddd;
+        }
+      }
     }
+  }
+}
+.pubIcon {
+  background: url(https://mcart.jiuxian.com/statics/images/cart/catIcon.png)
+    no-repeat 0 0;
+  background-size: 300rpx 300rpx;
+  width: 55rpx;
+  height: 55rpx;
+}
+.tureIcon {
+  background-position: 0 -225rpx;
+}
+.falseIcon {
+  background-position: -50rpx -225rpx;
+}
+.fixed-bar {
+  display: flex;
+  height: 98rpx;
+  width: 750rpx;
+  background-color: #fff;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  .allselect {
+    padding-left: @PADDING-LEFT;
+    width: 200rpx;
+    height: 98rpx;
+    display: flex;
+    align-items: center;
+  }
+  .statistics {
+    flex: 1;
+    display: flex;
+    // align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .jiesuan {
+    width: 200rpx;
+    height: 98rpx;
+    background-color: #ff2d4a;
+    color: #fff;
+    text-align: center;
+    line-height: 98rpx;
+  }
+
+  .disabled{
+    background-color: #ddd;
   }
 }
 </style>
@@ -103,15 +157,17 @@
       <text class="empty-car-tips extra">快去逛逛吧~</text>
     </view>
     <view wx:else>
+      <!-- 头部 -->
       <view class="shop-head">
         <view class="shop-head-info">
           <view class="iconfont icon-shop flex-center icon-dianpu"></view>
           <text class="shop-name">品优购生活馆</text>
         </view>
       </view>
-      <repeat for="{{goodsList}}" key="index" index="index" item="item">
+      <!-- 商品列表 -->
+      <block wx:for="{{goodsList}}" wx:key="{{item.goods_id}}">
         <view class="goods-item">
-          <view class="pubIcon {{item.isSelected?'tureIcon':'falseIcon'}}">
+          <view @tap="toggleSelect({{index}})" class="pubIcon {{item.isSelected?'tureIcon':'falseIcon'}}">
           </view>
           <view class="goods-item-pic">
             <image src="{{item.goods_small_logo}}" />
@@ -120,22 +176,40 @@
             <text class="goods-item-info-title">{{item.goods_name}}</text>
             <text class="goods-item-info-price">￥{{item.goods_price}}</text>
             <view class="goods-item-info-edit">
-              <view>
-                <inputnumber />
+              <view class="outer">
+                <view @tap="substrict({{index}})">-</view>
+                <view class="value"><input value="{{item.goodsCount}}" type="number" /></view>
+                <view @tap="add({{index}})" class="add">+</view>
               </view>
               <text>| 删除</text>
             </view>
           </view>
         </view>
-      </repeat>
+      </block>
+      <!-- 底部菜单栏 -->
+      <view class="fixed-bar">
+        <view @tap="toggleAllSelect" class="allselect">
+          <view class="pubIcon {{allSelected?'tureIcon':'falseIcon'}}">
+          </view>
+          <text style="margin-left:10rpx;">全选</text>
+        </view>
+        <view class="statistics">
+          <view>
+            <text>合计：</text>
+            <text style="color:#ff2d4a;font-size:30rpx;">￥{{getTotalAmount}}</text>
+          </view>
+          <text>包含运费</text>
+        </view>
+        <view @tap="goToOrder" class="jiesuan {{getTotalCount===0?'disabled':''}}">
+          <text>去结算 ({{getTotalCount}})</text>
+        </view>
+      </view>
     </view>
   </view>
 </template>
 
 <script>
 import wepy from 'wepy'
-
-import inputnumber from '../components/inputnumber'
 
 import { getLocalGoods } from '../utils/storageHelper'
 
@@ -147,12 +221,77 @@ export default class Shopcart extends wepy.page {
   }
 
   data = {
-    isEmpty: true,
+    isEmpty: true, // 是否为空
+    allSelected: true, // 是否全选
     goodsList: []
   }
 
-  components = {
-    inputnumber: inputnumber
+  computed = {
+    getTotalCount() {
+      let totalCount = 0
+      this.goodsList.forEach(item => {
+        if (item.isSelected) {
+          totalCount += item.goodsCount
+        }
+      })
+
+      return totalCount
+    },
+    getTotalAmount() {
+      let totalAmount = 0
+      this.goodsList.forEach(item => {
+        if (item.isSelected) {
+          totalAmount += item.goodsCount * item.goods_price
+        }
+      })
+
+      return totalAmount
+    }
+  }
+
+  methods = {
+    substrict(index) {
+      if (this.goodsList[index].goodsCount <= 1) return
+      this.goodsList[index].goodsCount--
+    },
+    add(index) {
+      this.goodsList[index].goodsCount++
+    },
+    toggleSelect(index) {
+      this.goodsList[index].isSelected = !this.goodsList[index].isSelected
+
+      this.checkIsAllSelected()
+    },
+    toggleAllSelect() {
+      this.allSelected = !this.allSelected
+
+      this.goodsList.forEach(item => {
+        item.isSelected = this.allSelected
+      })
+    },
+    goToOrder() {
+      let tempArray = []
+      this.goodsList.forEach(item => {
+        if (item.isSelected) {
+          tempArray.push(item.goods_id)
+        }
+      })
+      if (tempArray.length === 0) return
+
+      // 编程式导航跳转到下单页面
+      wepy.navigateTo({ url: `/pages/order?goods_ids=${tempArray.join(',')}` })
+    }
+  }
+
+  checkIsAllSelected() {
+    let isAllSelected = true
+    this.goodsList.forEach(item => {
+      if (!item.isSelected) {
+        isAllSelected = false
+      }
+    })
+
+    this.allSelected = isAllSelected
   }
 
   async getGoodsListData(localGoods, ids) {
@@ -167,7 +306,7 @@ export default class Shopcart extends wepy.page {
 
     this.goodsList.forEach(item => {
       item.isSelected = true
-      item.goodsCount = localGoods[item.goods_id]+""
+      item.goodsCount = localGoods[item.goods_id]
     })
 
     this.$apply()
