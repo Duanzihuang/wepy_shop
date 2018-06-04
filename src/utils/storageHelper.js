@@ -18,3 +18,19 @@ export const addLocalGoods = (goods) => {
 
   wepy.setStorageSync(KEY,localGoods)
 }
+
+export const updateLocalGoods = (goods) => {
+  const localGoods = getLocalGoods()
+
+  localGoods[goods.goodsId] = goods.count
+
+  wepy.setStorageSync(KEY,localGoods)
+}
+
+export const deleteGoodsById = (goodsId) => {
+  const localGoods = getLocalGoods()
+
+  delete localGoods[goodsId]
+
+  wepy.setStorageSync(KEY,localGoods)
+}

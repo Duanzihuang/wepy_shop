@@ -185,7 +185,7 @@ export default class Index extends wepy.page {
       url: 'home/swiperdata'
     })
 
-    this.swiperdata = result.data
+    this.swiperdata = result.data.message
     this.$apply()
   }
 
@@ -195,7 +195,7 @@ export default class Index extends wepy.page {
       url: 'home/catitems'
     })
 
-    this.catitems = result.data
+    this.catitems = result.data.message
     this.$apply()
   }
 
@@ -205,7 +205,7 @@ export default class Index extends wepy.page {
       url: 'home/floordata'
     })
 
-    this.floordata = result.data
+    this.floordata = result.data.message
     this.$apply()
   }
 

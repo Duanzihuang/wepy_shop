@@ -144,7 +144,7 @@
     line-height: 98rpx;
   }
 
-  .disabled{
+  .disabled {
     background-color: #ddd;
   }
 }
@@ -181,13 +181,13 @@
                 <view class="value"><input value="{{item.goodsCount}}" type="number" /></view>
                 <view @tap="add({{index}})" class="add">+</view>
               </view>
-              <text>| 删除</text>
+              <text @tap="deleteGoodsById({{index}})">| 删除</text>
             </view>
           </view>
         </view>
       </block>
       <!-- 底部菜单栏 -->
-      <view class="fixed-bar">
+      <view hidden="{{isEmpty}}" class="fixed-bar">
         <view @tap="toggleAllSelect" class="allselect">
           <view class="pubIcon {{allSelected?'tureIcon':'falseIcon'}}">
           </view>
@@ -211,7 +211,7 @@
 <script>
 import wepy from 'wepy'
 
-import { getLocalGoods } from '../utils/storageHelper'
+import { getLocalGoods, updateLocalGoods, deleteGoodsById } from '../utils/storageHelper'
 
 import https from '../utils/https'
 
@@ -249,13 +249,51 @@ export default class Shopcart extends wepy.page {
     }
   }
 
+  // 非组件触发的事件
+  notify(index) {
+    // 拿到要更改的对象
+    const goods = this.goodsList[index]
+
+    updateLocalGoods({
+      goodsId: goods.goods_id,
+      count: goods.goodsCount
+    })
+  }
+
   methods = {
     substrict(index) {
       if (this.goodsList[index].goodsCount <= 1) return
       this.goodsList[index].goodsCount--
+      this.notify(index)
     },
     add(index) {
       this.goodsList[index].goodsCount++
+      this.notify(index)
+    },
+    deleteGoodsById(index) {
+      wepy
+        .showModal({
+          title: '提示',
+          content: '确定删除吗?'
+        })
+        .then(res => {
+          if (res.confirm) {
+            // 拿到要删除的对象
+            const goods = this.goodsList[index]
+            deleteGoodsById(goods.goods_id)
+
+            // 删除goodsList当中的
+            this.goodsList.splice(index, 1)
+            if(this.goodsList.length == 0 ) {
+              this.isEmpty = true
+            }else{
+              this.isEmpty = false
+            }
+            this.$apply()
+          } else if (res.cancel) {
+            console.log('用户点击取消')
+          }
+        })
     },
     toggleSelect(index) {
       this.goodsList[index].isSelected = !this.goodsList[index].isSelected
@@ -302,7 +340,7 @@ export default class Shopcart extends wepy.page {
       }
     })
 
-    this.goodsList = result.data
+    this.goodsList = result.data.message
 
     this.goodsList.forEach(item => {
       item.isSelected = true
@@ -312,7 +350,7 @@ export default class Shopcart extends wepy.page {
     this.$apply()
   }
 
-  onLoad(options) {
+  onShow() {
     const localGoods = getLocalGoods()
 
     const tempArray = []

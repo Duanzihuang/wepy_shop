@@ -362,7 +362,7 @@ export default class GoodsDetail extends wepy.page {
         goods_id: goodsId
       }
     })
-    this.goods_detail = result.data
+    this.goods_detail = result.data.message
 
     WxParse.wxParse(
       'article',
