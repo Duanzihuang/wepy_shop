@@ -317,7 +317,7 @@ export default class Shopcart extends wepy.page {
       if (tempArray.length === 0) return
 
       // 编程式导航跳转到下单页面
-      wepy.navigateTo({ url: `/pages/order?goods_ids=${tempArray.join(',')}` })
+      wepy.navigateTo({ url: `/pages/pay?goods_ids=${tempArray.join(',')}` })
     }
   }
 

@@ -7,6 +7,6 @@ export default params=>{
       url:`${API_HOST}${params.url}`,
       method:params.method || 'GET',
       data:params.data,
-      header:params.header
+      header:params.header || {}
   })
 }

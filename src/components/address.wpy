@@ -47,6 +47,21 @@ export default class Address extends wepy.component {
         // console.log(res.telNumber)
         this.userAddress = res
         this.$apply()
+      }).catch(err => {
+        if(err.errMsg === 'chooseAddress:fail auth deny'){
+          console.log(`用户拒绝了`)
+          wepy.openSetting({
+            success: (res) => {
+              console.log(res)
+              /*
+              * res.authSetting = {
+              *   "scope.userInfo": true,
+              *   "scope.userLocation": true
+              * }
+              */
+            }
+          })
+        }
       })
     }
   }
