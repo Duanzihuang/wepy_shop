@@ -1,15 +1,29 @@
 <style lang="less">
 @import './statics/style/iconfont.wxss';
+@import url('../src/statics/style/weui/weui.less');
 page {
   background-color: #f4f4f4;
   font-size: 24rpx;
   color: #333;
+}
+.iconfont-tap {
+  font-family: 'iconfont' !important;
+  font-size: 32rpx;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+
+  min-width: 88rpx;
+  min-height: 88rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>
 
 <script>
 import wepy from 'wepy'
 import 'wepy-async-function'
+// import https from './utils/https'
 
 export default class extends wepy.app {
   config = {
@@ -67,6 +81,9 @@ export default class extends wepy.app {
     super()
     this.use('requestfix')
     this.use('promisify')
+
+    //给wepy的原型加上一个$http的属性
+    // wepy.constructor.prototype.$https = https
 
     // 拦截request请求
     this.intercept('request', {

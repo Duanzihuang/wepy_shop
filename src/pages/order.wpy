@@ -1,13 +1,293 @@
+<style lang="less" scoped>
+.menus {
+  height: 100rpx;
+  background-color: #ffffff;
+  display: flex;
+}
+.menu {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  font-size: 30rpx;
+  position: relative;
+}
+.active {
+  color: #ff2d4a;
+  font-weight: 400;
+}
+
+.active::after {
+  content: '';
+  height: 10rpx;
+  width: 100%;
+  background-color: #ff2d4a;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+
+.order {
+  margin-bottom: 30rpx;
+  &-item {
+    background-color: #ffffff;
+    margin-top: 30rpx;
+    // background-color: yellow;
+  }
+}
+
+.product-item {
+  display: flex;
+  padding: 30rpx 20rpx;
+  position: relative;
+}
+.product-item::after {
+  content: '';
+  position: absolute;
+  left: 20rpx;
+  right: 0;
+  bottom: 0;
+  border-bottom: 1rpx solid #ddd;
+}
+// .product-item:first-child::after {
+//   border-bottom: 0 none;
+// }
+
+.product-left {
+  margin-right: 26rpx;
+}
+.product-left,
+.product-left .product-img {
+  width: 200rpx;
+  height: 200rpx;
+  background-color: #eee;
+}
+.product-right {
+  width: 480rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+.product-name {
+  height: 84rpx;
+  font-size: 30rpx;
+  line-height: 1.4;
+  /* 多行文字隐藏省略号 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.product-price {
+  color: #ff2d4a;
+}
+.product-price-symbol,
+.product-price-decimal {
+  font-size: 28rpx;
+}
+.product-price-integer {
+  font-size: 44rpx;
+}
+
+.product-count {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  letter-spacing: 2rpx;
+}
+
+.order-total {
+  height: 88rpx;
+  background-color: #fff;
+  padding: 0 20rpx;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  position: relative;
+  color: #999;
+  &::after {
+    content: '';
+    position: absolute;
+    left: 20rpx;
+    right:20rpx;
+    right: 0;
+    bottom: 0;
+    border-bottom: 1rpx solid #ddd;
+  }
+}
+
+.order-item-pay {
+  display: flex;
+  height: 88rpx;
+  align-items: center;
+  padding: 0rpx 20rpx;
+  justify-content: space-between;
+}
+
+.btn-line {
+  border: 2rpx solid #999;
+  border-radius: 5rpx;
+  width: 156rpx;
+  height: 56rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 40rpx;
+}
+.btn-color-main {
+  color: #ff2d4a;
+}
+</style>
+
+
 <template>
-  <view>我是订单组件</view>
+  <view>
+    <!-- 1.0 菜单项 -->
+    <view class="menus">
+      <block wx:for="{{menus}}" wx:key="{{menu}}">
+        <view @tap="selectMenu({{index}})" class="menu {{selectMenuIndex===index?'active':''}}">
+          {{item}}
+        </view>
+      </block>
+    </view>
+
+    <!-- 2.0 订单列表（分状态） -->
+    <view class="order">
+      <block wx:for="{{orderList}}" wx:key="{{index}}" wx:for-item="order">
+        <view class="order-item">
+          <!-- 2.1 列表项(需要循环) -->
+          <block wx:for="{{order.goods}}" wx:key="{{item.goods_id}}">
+            <view class="product-item">
+              <navigator url="/pages/goods_detail?goods_id={{item.goods_id}}" class="product-left">
+                <image class="product-img holder-image" src="{{item.goods_small_logo}}" />
+              </navigator>
+              <view class="product-right">
+                <navigator url="/pages/goods_detail?goods_id={{item.goods_id}}" class="product-name">
+                  {{ item.goods_name }}
+                </navigator>
+                <view class="product-price">
+                  <text class="product-price-symbol">￥</text>
+                  <text class="product-price-integer">{{ item.goods_price }}</text>
+                  <text class="product-price-decimal">.00</text>
+                </view>
+                <view class="product-count">x{{ item.goods_number }}</view>
+              </view>
+            </view>
+          </block>
+          <!-- 2.2 统计信息 -->
+          <view class="order-total">
+            共{{order.total_count }}件商品 总计：¥{{order.total_price}} (含运费0.00)
+          </view>
+          <!-- 2.3 支付信息 -->
+          <view class="order-item-pay">
+            <view>订单号:{{order.order_number}}</view>
+            <view @tap="goToPay({{order.order_number}})" wx:if="{{order.pay_status==='0'}}" class="btn-line btn-color-main">支付</view>
+          </view>
+        </view>
+      </block>
+      <toast />
+    </view>
+  </view>
 </template>
 
 <script>
-  import wepy from 'wepy'
+import wepy from 'wepy'
 
-  export default class Order extends wepy.page {
-    config = {
-      navigationBarTitleText: '订单列表'
+import https from '../utils/https'
+
+import Toast from 'wepy-com-toast'
+
+export default class Order extends wepy.page {
+  components = {
+    toast : Toast
+  }
+
+  config = {
+    navigationBarTitleText: '订单列表'
+  }
+
+  data = {
+    menus: ['全部', '待付款', '已付款', '退款/退货'],
+    selectMenuIndex: 0,
+    orderList: []
+  }
+
+  async getOrderListByType(type) {
+    const result = await https({
+      url: `my/orders/all`,
+      data:{
+        type
+      }
+    })
+
+    this.orderList = result.data.message.orders
+    this.$apply()
+  }
+
+  methods = {
+    //切换菜单项
+    selectMenu(index) {
+      if(index === this.selectMenuIndex) return
+      this.selectMenuIndex = index
+      this.getOrderListByType(index+1)
+    },
+    //支付
+    goToPay(order_number){
+      https({
+      url: `my/orders/req_unifiedorder`,
+      method: 'POST',
+      data: {
+        order_number
+      }
+    })
+      .then(res => {
+        if (res.data.meta.status === 200) {
+          wepy
+            .requestPayment(res.data.message.wxorder)
+            .then(res => {
+              https({
+                url: `my/orders/chkOrder`,
+                method: 'POST',
+                data: {
+                  order_number
+                }
+              })
+                .then(res => {
+                  // console.log(res)
+                  this.getOrderListByType(this.selectMenuIndex+1)
+                })
+                .catch(err => {
+                  // console.log(err)
+                })
+            })
+            .catch(err => {
+              console.log(err)
+              this.$invoke('toast', 'show', {
+                title: '支付失败',
+                duration: 1000,
+                img: '../images/error2.png'
+              })
+            })
+        } else if (res.data.meta.status === 400) {
+          this.$invoke('toast', 'show', {
+            title: res.data.meta.msg,
+            duration: 1000,
+            img: '../images/error2.png'
+          }).then(res => {
+
+          })
+        }
+      })
+      .catch(err => {
+        console.log(err)
+      })
     }
   }
+
+  onLoad(options) {
+    this.getOrderListByType(1)
+  }
+}
 </script>
