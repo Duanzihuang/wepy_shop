@@ -1,6 +1,6 @@
 <style lang="less">
 .category {
-  margin-top: 10rpx;
+  margin-top: 10px;
   display: flex;
   &-left {
     width: 200rpx;
@@ -71,12 +71,12 @@
 </style>
 <template>
   <view class="category">
-    <scroll-view @tap="selectCategory" class="category-left">
+    <scroll-view scroll-y scroll-with-animation="{{true}}" @tap="selectCategory" class="category-left" style="height:{{windowHeight-10}}px;">
       <block wx:for="{{categories}}" wx:key="{{category.cat_id}}" wx:for-item="category">
         <view data-category-id="{{category.cat_id}}" data-index="{{index}}" class="category-left-item {{index === selectedIndex ?'category-left-active':''}}">{{category.cat_name}}</view>
       </block>
     </scroll-view>
-    <scroll-view class="category-right">
+    <scroll-view scroll-y scroll-with-animation="{{true}}" class="category-right" style="height:{{windowHeight-10}}px;">
       <view wx:for="{{brandList}}" wx:key="{{item.cat_id}}">
         <view class="category-right-title">{{item.cat_name}}</view>
         <view class="category-right-brandlist">
@@ -101,6 +101,7 @@ export default class Category extends wepy.page {
   }
 
   data = {
+    windowHeight:0,//屏幕高度
     categories: [],
     selectedIndex: 0, //选中的索引，默认是0
     brandList: [] //品牌数据列表
@@ -118,6 +119,11 @@ export default class Category extends wepy.page {
   }
 
   async onLoad(options) {
+    //获取系统信息
+    const systemInfo = await wepy.getSystemInfo()
+    this.windowHeight = systemInfo.windowHeight
+    // console.log(this.windowHeight)
+
     const res = await httpsGet(`categories`)
     this.categories = res.data.message
 
