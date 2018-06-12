@@ -1,16 +1,146 @@
 <style lang="less">
+.category {
+  margin-top: 10rpx;
+  display: flex;
+  &-left {
+    width: 200rpx;
+    background-color: #f4f4f4;
+    display: flex;
+    flex-direction: column;
+    &-item {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 200rpx;
+      height: 100rpx;
+      position: relative;
+    }
+    &-active {
+      background-color: #ffffff;
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 10rpx;
+        width: 5px;
+        height: 80rpx;
+        background-color: #ff2d4a;
+      }
+    }
+  }
 
+  &-right {
+    flex: 1;
+    background-color: #ffffff;
+    &-title{
+      display: flex;
+      // background-color: red;
+      justify-content: center;
+      align-items: center;
+      height: 80rpx;
+      &::before{
+        content:'/';
+        color: #eeeeee;
+        margin-right: 20rpx;
+      }
+
+      &::after{
+        content:'/';
+        color: #eeeeee;
+        margin-left: 20rpx;
+      }
+    }
+    &-brandlist{
+      display: flex;
+      flex-wrap: wrap;
+    }
+    &-brand{
+      width: 33.3333333%;
+      height: 200rpx;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      image{
+        width: 100rpx;
+        height: 80rpx;
+      }
+    }
+  }
+}
 </style>
 <template>
-  <text>分类</text>
+  <view class="category">
+    <scroll-view @tap="selectCategory" class="category-left">
+      <block wx:for="{{categories}}" wx:key="{{category.cat_id}}" wx:for-item="category">
+        <view data-category-id="{{category.cat_id}}" data-index="{{index}}" class="category-left-item {{index === selectedIndex ?'category-left-active':''}}">{{category.cat_name}}</view>
+      </block>
+    </scroll-view>
+    <scroll-view class="category-right">
+      <view wx:for="{{brandList}}" wx:key="{{item.cat_id}}">
+        <view class="category-right-title">{{item.cat_name}}</view>
+        <view class="category-right-brandlist">
+          <view class="category-right-brand" wx:for="{{item.children}}" wx:for-item="brand" wx:key="{{brand.cat_id}}">
+            <image src="{{brand.cat_icon}}" />
+            <text>{{brand.cat_name}}</text>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
 </template>
 
 <script>
-  import wepy from 'wepy'
+import wepy from 'wepy'
 
-  export default class Category extends wepy.page {
-    config = {
-      navigationBarTitleText: '分类'
+import { httpsGet } from '../utils/https'
+
+export default class Category extends wepy.page {
+  config = {
+    navigationBarTitleText: '分类'
+  }
+
+  data = {
+    categories: [],
+    selectedIndex: 0, //选中的索引，默认是0
+    brandList: [] //品牌数据列表
+  }
+
+  methods = {
+    selectCategory(e) {
+      if (e.target.dataset.index === this.selectedIndex) return
+
+      this.selectedIndex = e.target.dataset.index
+
+      this.brandList = this.categories[this.selectedIndex].children
+      // console.log(this.brandList)
     }
   }
+
+  async onLoad(options) {
+    const res = await httpsGet(`categories`)
+    this.categories = res.data.message
+
+    //处理，把图片路径补全
+    this.categories.forEach(category => {
+      if (category) {
+        category.children.forEach(brandList => {
+          if(brandList && brandList.children){
+            brandList.children.forEach(brand=>{
+              brand.cat_icon =`https://www.zhengzhicheng.cn/${brand.cat_icon}`
+            })
+          }
+        })
+      }
+    })
+
+    //默认选中第一个
+    this.brandList = this.categories[0].children
+
+    this.$apply()
+  }
+
+  //根据分类id获取
+  async getBrandListByCategoryId() {}
+}
 </script>
